@@ -1,0 +1,50 @@
+[
+  {
+    "date": "2026-05-29 02:01",
+    "skin_score": 28,
+    "acne_count": 0,
+    "severity": "Moderate",
+    "result_url": "/results/result_b6de8a09531e4c6e8d832ecd20b8af82.jpg",
+    "original_url": "/uploads/a574d4c4250a4e7686d5e91b54a63cc9.png"
+  },
+  {
+    "date": "2026-05-29 01:44",
+    "skin_score": 0,
+    "acne_count": 11,
+    "severity": "Moderate",
+    "result_url": "/results/result_e477ec154c2a4b4fa0ec37b5652fc71d.jpg",
+    "original_url": "/uploads/c03b021bd4494a56b30f3b3502773e72.png"
+  },
+  {
+    "date": "2026-05-29 01:41",
+    "skin_score": 100,
+    "acne_count": 0,
+    "severity": "Clear",
+    "result_url": "/results/result_df5500bfc09f42c783f76a0237e4443e.jpg",
+    "original_url": "/uploads/555f002e31d94f37a796ace17964312b.jpg"
+  },
+  {
+    "date": "2026-05-29 01:39",
+    "skin_score": 0,
+    "acne_count": 380,
+    "severity": "Severe",
+    "result_url": "/results/result_0bcffe01daed411b817592f1070de6c7.jpg",
+    "original_url": "/uploads/c7cbd120feff41c0940cecf70dff0583.jpg"
+  },
+  {
+    "date": "2026-05-29 01:39",
+    "skin_score": 100,
+    "acne_count": 0,
+    "severity": "Clear",
+    "result_url": "/results/result_96b878e671ba45698420ab27a6d2ec3c.jpg",
+    "original_url": "/uploads/f4e7302f23164be180756cf44b7d9eb9.jpg"
+  },
+  {
+    "date": "2026-05-29 01:38",
+    "skin_score": 100,
+    "acne_count": 0,
+    "severity": "Clear",
+    "result_url": "/results/result_344a4566feea41fe8adfff3fdb1b8483.jpg",
+    "original_url": "/uploads/1a7424edb13644f2af99eeb15f3a20a6.jpg"
+  }
+]

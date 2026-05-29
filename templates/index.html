@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkinAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background: #0a0a14; color: #e0e0e0; }
+    .gradient-text { background: linear-gradient(90deg, #c026d3, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .result-img { max-height: 420px; object-fit: contain; border-radius: 20px; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <nav class="border-b border-gray-800 bg-black/80 backdrop-blur fixed w-full z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-face-smile text-3xl text-purple-500"></i>
+        <span class="text-3xl font-bold gradient-text">SkinAI</span>
+      </div>
+      <div class="flex gap-8">
+        <a href="#" class="hover:text-purple-400">Analyzer</a>
+        <a href="#how" class="hover:text-purple-400">How It Works</a>
+        <a href="#" onclick="loadHistory()" class="hover:text-purple-400">History</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pt-24 max-w-6xl mx-auto px-6">
+    <h1 class="text-5xl font-bold text-center gradient-text mb-3">Know Your Skin.<br>Glow Smarter.</h1>
+    <p class="text-center text-gray-400 mb-10">Upload or scan your face for instant AI skin analysis</p>
+
+    <!-- Upload Area -->
+    <div id="upload-area" class="max-w-2xl mx-auto bg-gray-900 rounded-3xl p-10 border border-dashed border-purple-500/50 text-center">
+      <i class="fa-solid fa-cloud-arrow-up text-6xl text-purple-400 mb-6"></i>
+      <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFile(this)">
+      <button onclick="document.getElementById('fileInput').click()" 
+              class="bg-purple-600 hover:bg-purple-700 px-10 py-4 rounded-2xl text-lg font-medium">
+        Choose Photo
+      </button>
+      <button onclick="startCamera()" 
+              class="ml-4 bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-2xl text-lg font-medium">
+        📷 Use Camera
+      </button>
+    </div>
+
+    <!-- Camera -->
+    <div id="camera-area" class="hidden max-w-2xl mx-auto">
+      <video id="video" class="w-full rounded-3xl" autoplay playsinline></video>
+      <button onclick="capturePhoto()" class="mt-6 w-full bg-green-600 py-5 rounded-2xl text-xl font-medium">
+        📸 Capture Photo
+      </button>
+    </div>
+
+    <!-- Result Section -->
+    <div id="result-section" class="hidden mt-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-xs uppercase tracking-widest text-gray-500 mb-2">Original Photo</p>
+          <img id="original-img" class="result-img w-full shadow-2xl">
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-gray-500 mb-2">AI Analysis</p>
+          <img id="result-img" class="result-img w-full shadow-2xl border border-red-500/30">
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-6 mt-10">
+        <div class="bg-gray-900 rounded-3xl p-6 text-center">
+          <div id="skin-score" class="text-5xl font-bold text-green-400">85</div>
+          <p class="text-gray-400 text-sm">Skin Health Score</p>
+        </div>
+        <div class="bg-gray-900 rounded-3xl p-6 text-center">
+          <div id="acne-count" class="text-5xl font-bold text-red-400">3</div>
+          <p class="text-gray-400 text-sm">Acne Spots</p>
+        </div>
+        <div class="bg-gray-900 rounded-3xl p-6 text-center">
+          <div id="severity" class="text-4xl font-bold text-orange-400">Mild</div>
+          <p class="text-gray-400 text-sm">Severity</p>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-semibold mb-6">💡 Personalized Recommendations</h2>
+        <div id="recommendations" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- AI Advisor -->
+      <div class="mt-12 bg-gray-900 rounded-3xl p-8">
+        <h2 class="text-2xl font-semibold mb-6">🤖 Ask Your AI Skin Advisor</h2>
+        <div id="chat-messages" class="h-72 overflow-y-auto mb-6 space-y-4 pr-4"></div>
+        <div class="flex gap-3">
+          <input id="chat-input" type="text" placeholder="Ask anything about your skin..." 
+                 class="flex-1 bg-gray-800 rounded-2xl px-6 py-4 focus:outline-none">
+          <button onclick="sendChatMessage()" class="bg-purple-600 px-10 rounded-2xl">Send</button>
+        </div>
+      </div>
+
+      <div class="flex gap-4 mt-10">
+        <button onclick="downloadReport()" 
+                class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-5 rounded-2xl font-medium text-lg">
+          📄 Download PDF Report
+        </button>
+        <button onclick="newScan()" 
+                class="flex-1 border border-gray-600 py-5 rounded-2xl font-medium text-lg">
+          Scan New Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAnalysis = {};
+
+    async function handleFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      await processUpload(formData);
+    }
+
+    async function processUpload(formData) {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      currentAnalysis = data;
+      document.getElementById('original-img').src = data.original_url;
+      document.getElementById('result-img').src = data.result_url;
+      document.getElementById('skin-score').textContent = data.skin_score;
+      document.getElementById('acne-count').textContent = data.acne_count;
+      document.getElementById('severity').textContent = data.severity;
+
+      // Recommendations
+      const recDiv = document.getElementById('recommendations');
+      recDiv.innerHTML = data.recommendations.map(r => 
+        `<div class="bg-gray-800 p-5 rounded-2xl">${r}</div>`).join('');
+
+      document.getElementById('upload-area').classList.add('hidden');
+      document.getElementById('camera-area').classList.add('hidden');
+      document.getElementById('result-section').classList.remove('hidden');
+    }
+
+    function startCamera() {
+      document.getElementById('upload-area').classList.add('hidden');
+      document.getElementById('camera-area').classList.remove('hidden');
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => document.getElementById('video').srcObject = stream);
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('video');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      
+      canvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append('file', blob, 'camera.jpg');
+        processUpload(formData);
+      }, 'image/jpeg');
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const question = input.value.trim();
+      if (!question) return;
+
+      const chatDiv = document.getElementById('chat-messages');
+      chatDiv.innerHTML += `<div class="text-right"><div class="inline-block bg-purple-600 px-5 py-3 rounded-3xl max-w-[80%]">${question}</div></div>`;
+
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question,
+          ...currentAnalysis
+        })
+      });
+
+      const data = await res.json();
+      chatDiv.innerHTML += `<div><div class="inline-block bg-gray-800 px-5 py-3 rounded-3xl max-w-[80%]">${data.reply}</div></div>`;
+      input.value = '';
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    function downloadReport() {
+      fetch('/report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(currentAnalysis)
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'SkinAI_Report.pdf';
+        a.click();
+      });
+    }
+
+    function newScan() {
+      location.reload();
+    }
+  </script>
+</body>
+</html>
